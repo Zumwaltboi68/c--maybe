@@ -13,28 +13,18 @@ app.get('/', (req, res) => {
 
 app.post('/run', (req, res) => {
     const { code } = req.body;
-    const cppProcess = spawn('g++', ['-o', 'output', '-xc++', '-'], {
-        shell: true
-    });
+
+    const cppProcess = spawn('g++', ['-o', 'output', '-xc++', '-']);
 
     cppProcess.stdin.write(code);
     cppProcess.stdin.end();
 
-    cppProcess.stdout.on('data', (data) => {
-        console.log(`stdout: ${data}`);
-    });
-
-    cppProcess.stderr.on('data', (data) => {
-        console.log(`stderr: ${data}`);
-    });
-
     cppProcess.on('close', (code) => {
         if (code === 0) {
-            const runProcess = spawn('./output', {
-                shell: true
-            });
+            const runProcess = spawn('./output');
 
             let output = '';
+
             runProcess.stdout.on('data', (data) => {
                 output += data.toString();
             });
@@ -43,7 +33,7 @@ app.post('/run', (req, res) => {
                 output += data.toString();
             });
 
-            runProcess.on('close', (code) => {
+            runProcess.on('close', () => {
                 res.json({ output });
             });
         } else {
